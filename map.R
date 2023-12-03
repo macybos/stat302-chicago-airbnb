@@ -4,7 +4,7 @@ library(leaflet)
 library(leaflet.extras)
 
 chicago_clean <- readRDS("data/clean_data/chicago_cleaned_data.rds")
-register_google(key = "AIzaSyC46bco6pjyrIJYIPzY5U1r5T2ktssaFck")
+#register_google(key = "AIzaSyC46bco6pjyrIJYIPzY5U1r5T2ktssaFck")
 
 ui <- fluidPage(
   titlePanel("Chicago Listing Heatmap"),
