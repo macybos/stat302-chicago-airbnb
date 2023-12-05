@@ -73,7 +73,6 @@ ui <- fluidPage(
                      "rating",
                      "bedrooms",
                      "price",
-                     "baths",
                      "reviews_per_month",
                      "availability_365"
                    )
@@ -114,22 +113,26 @@ ui <- fluidPage(
     
     tabPanel("Explanation", fluid = TRUE,
              fluidRow(column(
-               12, div("Explanation of the Chicago Listing Visualization", class = "header")
+               12, div("Chicago Listing Visualization: Explanation an", class = "header")
              )),
              fluidRow(
                column(
                  12,
-                 p("For our final project, we elected to work with the Airbnb data set from insideairbnb.com (http://insideairbnb.com/get-the-data/)[http://insideairbnb.com/get-the-data/]")
+                 p("For our final project, we elected to work with the Airbnb data set from insideairbnb.com. This data provides information on over 5,000 different Airbnb listings in the Chicago Area")
                ),
-               # Subheadings and content
+              
                column(
                  12,
-                 h4("Research Question"),
-                 p("The app aims to address the research question: How are different listing variables distributed across the city of Chicago?"),
-                 h4("Initiative"),
-                 p("The initiative involves creating an interactive tool for users to visualize and analyze Chicago housing data."),
-                 h4("Ideas"),
-                 p("Possible future enhancements include incorporating more advanced analytics, additional map layers, and user customization options.")
+                 h4("Core Concepts & Insights"),
+                 p("For our final visualization, we elected to create a Shiny app which allows users to visualize and manipulate the Airbnb data set to better understand the distribution of various variables in the data set. Particularly, in our animated map, users are able to explore the relative listing densities of price, bedrooms, ratings, and even availability over a calendar year to better understand how the platform fluctuates across the city of Chicago and beyond. In our case, users can select the price variable to visualize which areas of the city are most expensive and where there is the highest density of Airbnb’s with a certain price. This is an extremely helpful visualization as it enables us to demonstrate the most expensive and desirable locations in Chicago. Beyond this, users can also explore the density of availability (how many days an Airbnb listing spends vacant on average in a year) in each region to see which areas of Chicago are most and least popular. Finally, the bedroom and bath variables demonstrate the sizes of the listings and where the largest and smallest listings are.
+	In viewing the data, users are able to conclude that the most expensive and popular parts of the city are just north of South Loop in Chicago as both availability and price have the highest density of listings here. Even further, bedroom and bath data shows that the majority of listings have only 1-2 bedrooms and that there are only a select number of listings with extremely large property sizes. Finally, the review per month variable visualizes which listings are most frequented in Chicago and thus another visualization of which neighborhoods are most popular in the city.
+"),
+h4("Animation and Visualization Guidebook"),
+p("blah blah."),
+h4("Key Features and Explanations"),
+p("blah blah"),
+h4("Next Steps and Future Explorations"),
+p("Possible future enhancements include incorporating more advanced analytics, additional map layers, and user customization options."),
                )
              )
     )
@@ -147,11 +150,11 @@ server <- function(input, output, session) {
     chicago_subset <-
       chicago_clean |> slice_sample(n = input$num_listings)  # Use selected number of listings
     
-    map <- leaflet() %>%
+    map <- leaflet() |> 
       addProviderTiles("CartoDB.DarkMatter")
     
     if (markers()) {
-      map <- map %>%
+      map <- map |> 
         addAwesomeMarkers(
           data = chicago_subset,
           lat = ~ latitude,
@@ -187,20 +190,20 @@ server <- function(input, output, session) {
         )
     }
     
-    map <- map %>%
+    map <- map |> 
       addHeatmap(
         data = chicago_clean,
         lat = ~ latitude,
         lng = ~ longitude,
         intensity = chicago_subset[[input$variable]],
         blur = 20,
-        radius = 8
-      ) %>%
+        radius = 15
+      ) |> 
       addLegend(
         title = paste("", input$variable),
         values = chicago_subset[[input$variable]],
         pal = colorNumeric("viridis", domain = NULL),
-        opacity = 0.7
+        opacity = 1
       )
     
     map
@@ -208,3 +211,5 @@ server <- function(input, output, session) {
 }
 
 shinyApp(ui, server)
+
+
