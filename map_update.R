@@ -4,7 +4,6 @@ library(leaflet)
 library(leaflet.extras)
 library(sf)
 
-chicago_static_map_data <- read_sf("data/chicagomap.shp")
 chicago_clean <- readRDS("data/clean_data/chicago_cleaned_data.rds")
 
 ui <- fluidPage(
@@ -24,6 +23,11 @@ ui <- fluidPage(
           font-weight: bold;
         }
         
+        .body-text{
+          padding: 25px;
+          font-size: 20;
+          text-align: center;
+        }
 
         .container {
           background-color: #333;
@@ -41,10 +45,6 @@ ui <- fluidPage(
           position: relative;
         }
         
-        .plot-container {
-          backgroud-color : #dcdcdc;
-        }
-
         .action-button {
           position: absolute;
           top: 10px;
@@ -55,7 +55,6 @@ ui <- fluidPage(
     }
 
     .nav-tabs > li.active > a,
-    .nav-tabs > li.active > a:hover,
     .nav-tabs > li.active > a:focus {
       color: white;
       background-color: #333;
@@ -121,80 +120,111 @@ ui <- fluidPage(
     
     tabPanel("Summary Visuals", fluid = TRUE,
              fluidRow(column(
-               12, div("A More Detailed Look", class = "header")
+               12, div("A More Detailed Breakdown", class = "header")
              )),
-             fluidRow(br()),
+             br(),
              column(12, h2("First, a breakdown of the sample shown on the map.")), 
              fluidRow(
                column(12,
                       div(tableOutput("variableBreakdown"))
                ), 
                column(12,
-                      div(class = "plot-container", plotOutput("histogram"))
+                      div(plotOutput("histogram"))
                )), 
              br(), 
              column(12, h2("Now, lets look at the neighborhoods and neighborhood groups.")), 
-             fluidRow(
-               column(6,
-                       div(class = "plot-container", plotOutput(outputId = "neighborhoodBarplot"))),
-                column(6, fluidRow(div(class = "plot-container", plotOutput(outputId = "neighborhoodGroupBarplot"))), 
-                          fluidRow(div(class = "plot-container", plotOutput(outputId = "neighborhoodMap")))
-                )
-             )  
+       
+             column(6,
+                     div(plotOutput(outputId = "neighborhoodBarplot"))),
+              column(6, div(plotOutput(outputId = "neighborhoodGroupBarplot")),
+                        br(),
+                        div(plotOutput(outputId = "neighborhoodListingsMakeup")))
     ),
     tabPanel("Neighborhood Groups", fluid = TRUE,
              fluidRow(column(
-               12, div("Chicago Listing Visualization: Explanation an", class = "header")
+               12, div("Neighborhood Groups", class = "header")
              )),
-             
-             div("The code categorizes neighborhoods in Chicago into different groups based on their geographical locations. The neighborhoods are assigned to broader areas or sides of the city to facilitate analysis and interpretation. The groupings are as follows:"), 
-             
-             fluidRow(
-               column(4,
-                 fluidRow(p("North Side")), 
-                 fluidRow(p(" Albany Park, Avondale, Lake View, Lincoln Park, Lincoln Square, Logan Square, North Center, Rogers Park, Uptown, Edgewater, West Ridge, Loop, Near North Side, North Side"))
+        
+             div(class = "body-text",
+               fluidRow(
+                 p("The code categorizes neighborhoods in Chicago into different groups based on their geographical locations. The neighborhoods are assigned to broader areas or sides of the city to facilitate analysis and interpretation. The groupings are as follows:")
+               ),
+                 
+               fluidRow(
+                 column(12,
+                   fluidRow(h5("North Side")), 
+                   fluidRow(p(" Albany Park, Avondale, Lake View, Lincoln Park, Lincoln Square, Logan Square, North Center, Rogers Park, Uptown, Edgewater, West Ridge, Loop, Near North Side, North Side"))
+                 )
+               ), 
+               fluidRow(
+                 column(12,
+                   fluidRow(h5("Southwest Side")), 
+                   fluidRow(p("Archer Heights, Ashburn, Beverly, Gage Park, Garfield Ridge, Hermosa, West Elsdon, West Englewood"))
+                 )
+               ),fluidRow(
+                 column(12,
+                   fluidRow(h5("South Side")), 
+                   fluidRow(p("Armour Square, Bridgeport, Burnside, Calumet Heights, Chatham, Chicago Lawn, Clearing, Douglas, Grand Boulevard, Hyde Park, Kenwood, South Chicago, South Deering, South Lawndale, South Shore, Auburn Gresham, West Garfield Park, Near South Side, Avalon Park, New City, Woodlawn, Fuller Park, Englewood"))
+               )),fluidRow(
+                 column(12,
+                   fluidRow(h5("West Side")), 
+                   fluidRow(p(" Austin, East Garfield Park, Humboldt Park, West Town"))
+               )), fluidRow(
+                 column(12, 
+                        fluidRow(h5("Northwest Side")),
+                        fluidRow(p("Belmont Cragin, Dunning, North Park, Norwood Park, Near West Side, Edison Park, Forest Glen, Irving Park, Jefferson Park, Montclare, Ohare, Portage Park"))
+                )),fluidRow(
+                  column(12, 
+                         fluidRow(h5("Far Northwest Side")),
+                         fluidRow(p("Edgewater, Edison Park, Forest Glen, Irving Park, Jefferson Park, Montclare, Ohare, Portage Park"))
+                )),fluidRow(
+                  column(12, 
+                         fluidRow(h5("Southwest Side")),
+                         fluidRow(p("Fuller Park, Englewood, Lower West Side, Mckinley Park, North Lawndale, Brighton Park"))
+                )),fluidRow(
+                  column(12, 
+                         fluidRow(h5("Other")),
+                         fluidRow(p("All neighborhoods not explicitly listed in the above groups are categorized as “Other.” These are neighborhoods which lie far beyond the defined Chicagoland geography."))
+                ))
                )
-             ), 
-             fluidRow(
-               column(4,
-                 fluidRow(p("Southwest Side")), 
-                 fluidRow(p("Archer Heights, Ashburn, Beverly, Gage Park, Garfield Ridge, Hermosa, West Elsdon, West Englewood"))
-               )
-             ),fluidRow(
-               column(4,
-                 fluidRow(p("South Side")), 
-                 fluidRow(p("Armour Square, Bridgeport, Burnside, Calumet Heights, Chatham, Chicago Lawn, Clearing, Douglas, Grand Boulevard, Hyde Park, Kenwood, South Chicago, South Deering, South Lawndale, South Shore, Auburn Gresham, West Garfield Park, Near South Side, Avalon Park, New City, Woodlawn, Fuller Park, Englewood"))
-             )),fluidRow(
-               column(4,
-                 fluidRow(p("West Side")), 
-                 fluidRow(p(" Austin, East Garfield Park, Humboldt Park, West Town")
-             )))
     ),
     
     tabPanel("Explanation", fluid = TRUE,
              fluidRow(column(
-               12, div("Chicago Listing Visualization: Explanation an", class = "header")
+               12, div("Chicago Listing Visualization: Explanation", class = "header")
              )),
+             br(),
              fluidRow(
                column(
-                 12,
+                 8,
+                 offset = 2,
                  p("For our final project, we elected to work with the Airbnb data set from insideairbnb.com. This data provides information on over 5,000 different Airbnb listings in the Chicago Area")
                ),
               
                column(
-                 12,
-                 h4("Core Concepts & Insights"),
-                 p("For our final visualization, we elected to create a Shiny app which allows users to visualize and manipulate the Airbnb data set to better understand the distribution of various variables in the data set. Particularly, in our animated map, users are able to explore the relative listing densities of price, bedrooms, ratings, and even availability over a calendar year to better understand how the platform fluctuates across the city of Chicago and beyond. In our case, users can select the price variable to visualize which areas of the city are most expensive and where there is the highest density of Airbnb’s with a certain price. This is an extremely helpful visualization as it enables us to demonstrate the most expensive and desirable locations in Chicago. Beyond this, users can also explore the density of availability (how many days an Airbnb listing spends vacant on average in a year) in each region to see which areas of Chicago are most and least popular. Finally, the bedroom and bath variables demonstrate the sizes of the listings and where the largest and smallest listings are.
-	In viewing the data, users are able to conclude that the most expensive and popular parts of the city are just north of South Loop in Chicago as both availability and price have the highest density of listings here. Even further, bedroom and bath data shows that the majority of listings have only 1-2 bedrooms and that there are only a select number of listings with extremely large property sizes. Finally, the review per month variable visualizes which listings are most frequented in Chicago and thus another visualization of which neighborhoods are most popular in the city.
-"),
-h4("Animation and Visualization Guidebook"),
-p("blah blah."),
-h4("Key Features and Explanations"),
-p("blah blah"),
-h4("Next Steps and Future Explorations"),
-p("Possible future enhancements include incorporating more advanced analytics, additional map layers, and user customization options."),
-               )
-             )
+                 8,
+                 offset = 2,
+                 h4("Visualizations: Core Concepts & Insights"),
+                 p("For our final visualization, we elected to create a Shiny app which allows users to visualize and manipulate the Airbnb data set to better understand the distribution of various variables in the data set. Particularly, in our animated map, users are able to explore the relative listing densities of price, bedrooms, ratings, and even availability over a calendar year to better understand how the platform fluctuates across the city of Chicago and beyond. In our case, users can select the price variable to visualize which areas of the city are most expensive and where there is the highest density of Airbnb’s with a certain price. This is an extremely helpful visualization as it enables us to demonstrate the most expensive and desirable locations in Chicago. Beyond this, users can also explore the density of availability (how many days an Airbnb listing spends vacant on average in a year) in each region to see which areas of Chicago are most and least popular. Finally, the bedroom and bath variables demonstrate the sizes of the listings and where the largest and smallest listings are."),
+                
+                p("In addition to the interactive map, we decided to include a tab with summary statistics and visualizations by neighborhood to give the user a more in depth look at the variable they chose. Key summary statistics that we display include the mean, maximum, minimum, total number of values, and distinct number of values. Below these statistics, we included a histogram for the variable selected to show the user how it is distributed in the sample they have chosen. The users can also see a breakdown of how their variable fairs in each neighborhood in the barplots, as well as, how many listings from the sample are in each neighborhood group in the pie chart. The barplots show the average for both neighborhoods and neighborhood groups.  We felt the addition of this summary tab ensured that the user could not only see the density of values on the map, but also get a more explicit breakdown of their variable in the sample."),
+                 
+                p("Together, we think the map and summary tab give a holistic view of the airbnb data and how distinct variables are distributed across Chicago and in the data set itself."),
+                br(),
+                h4("Shiny App: Key Widgets and Explanations"),
+                p("Variable selection - We wanted to be able to look at any of the continuous variables and how their densities differ across Chicago"),
+
+                 p("Sample selection - Allowing the users to choose how many listings are on the map lets them see the effect that more listings may have on the variable they have chosen. With fewer listings, it may seem as though neighborhood prices are fairly equal, but as you increase the sample size, you can see the variation between neighborhood groups increase."),
+
+                  p("Listing markers - The density map gives a good idea of where the variable is concentrated, but we thought that adding the listing markers was helpful, especially when the sample size was small. It shows exactly which listings are being pulled to create the density map"),
+
+                  p("Neighborhood group tab - We thought this was necessary to show which neighborhoods fall into which groups 
+                  "),
+                br(),
+                h4("Next Steps and Future Explorations"),
+                p("Possible future enhancements include incorporating more advanced analytics, additional map layers, and more user customization options. We think it would be very interesting to look at the densities of two variables concurrently. With this addition, the summary tab could develop to also show the correlation between the two variables selected."),
+                           )
+                         )
     )
   )
 )
@@ -255,7 +285,7 @@ server <- function(input, output, session) {
     
     map <- map |> 
       addHeatmap(
-        data = chicago_clean,
+        data = chicago_subset(),
         lat = ~ latitude,
         lng = ~ longitude,
         intensity = chicago_subset()[[input$variable]],
@@ -290,9 +320,9 @@ server <- function(input, output, session) {
         'reviews_per_month' = 'Reviews Per Month', 
         'availability_365' = 'Availability throughout the Year'
       )
-      
+     
       chicago_subset() %>% 
-          summarise(Variable = var_title, Total = n(), Mean = mean(var_summarise), Distinct = n_distinct(var_summarise), Minimum = min(var_summarise), Maximum = max(var_summarise))
+          summarise(Variable = var_title, Total = n(), Mean = mean(var_summarise, na.rm = TRUE), Distinct = n_distinct(var_summarise), Minimum = min(var_summarise, na.rm = TRUE), Maximum = max(var_summarise, na.rm = TRUE))
     })
     
     output$histogram <- renderPlot({
@@ -315,11 +345,22 @@ server <- function(input, output, session) {
         'availability_365' = 'Availability throughout the Year'
       )
       
-      if (input$variable != 'bedrooms') {
-        chicago_subset() %>% ggplot(aes(var_bar)) +
-          geom_histogram() + 
-          ggtitle(paste("Distribution of", var_title, "in the Sample"))
-      }
+      
+      chicago_subset() %>% ggplot(aes(var_bar)) +
+        geom_histogram(fill = "#482677ff") + 
+       labs(
+         title = paste("Distribution of", var_title, "in the Sample"),
+         x = var_title, 
+         y = "Count"
+         ) +
+        theme(
+          plot.background = element_rect(fill= "#dcdcdc",  color = "#dcdcdc"), 
+          plot.title = element_text(size = 18, face = "bold"),
+          axis.text = element_text(size = 12), 
+          axis.title = element_text(size = 14)
+        )
+      
+      
     })
     
     output$neighborhoodBarplot <- renderPlot({
@@ -342,21 +383,28 @@ server <- function(input, output, session) {
         'availability_365' = 'Availability throughout the Year'
       )
       
-      chicago_subset() %>% ggplot(aes(var_bar, neighbourhood)) +
-        geom_col(aes(fill = neighbourhood), position = 'dodge', width = 0.9, show.legend = FALSE) +
+      chicago_subset() %>%  
+        ggplot(aes(var_bar, neighbourhood)) +
+        geom_col(aes(fill = neighbourhood_group), position = "dodge", width = 0.9) +
         ggtitle(paste('Average', var_title, 'in each Neighborhood')) +
         labs(
           x = var_title,
-          y = "Neighborhood"
+          y = "Neighborhood",
+          fill = "Neighborhood Groups"
         ) + 
         scale_x_continuous(
           expand =  expansion(mult = c(0, .1))
         ) +
-        theme(plot.title = element_text(size = 12, face = "bold"), 
+        theme(plot.title = element_text(size = 18, face = "bold"), 
               axis.text = element_text(size = 12), 
-              axis.title = element_text(size = 18),
-              rect = element_rect(color = "#dcdcdc")
-        )
+              axis.title = element_text(size = 14),
+              plot.background = element_rect(fill= "#dcdcdc",  color = "#dcdcdc"), 
+              legend.position = "right", 
+              legend.background = element_rect(fill= "#dcdcdc",  color = "black"), 
+              legend.direction = "vertical", 
+              legend.text = element_text(size=18), 
+              legend.title = element_text(size=18)
+        ) 
     }, height = 800)
     
     output$neighborhoodGroupBarplot <- renderPlot({
@@ -380,28 +428,44 @@ server <- function(input, output, session) {
       )
       
       chicago_subset() %>% ggplot(aes(var_bar, neighbourhood_group)) +
-        geom_col(position = 'dodge', fill = "lightblue", width = 0.9) +
-        ggtitle(paste('Average', var_title, 'in each Neighborhood Group')) +
+        geom_col(aes(fill = neighbourhood_group), position = 'dodge', width = 0.9, show.legend = FALSE) +
         labs(
+          title = paste('Average', var_title, 'in each Neighborhood Group'),
           y = "Neighborhood Group",
-          x = var_title
+          x = var_title, 
+          fill = "Neighborhood\nGroup"
         ) + 
         scale_x_continuous(
           expand = expansion(mult = c(0, .1))
         ) +
-        theme(plot.title = element_text(size = 12, face = "bold"), 
+        theme(plot.title = element_text(size = 18, face = "bold"), 
               axis.text = element_text(size = 12), 
-              axis.title = element_text(size = 18),
-              rect = element_rect(color = "#dcdcdc")
+              axis.title = element_text(size = 14),
+              plot.background = element_rect(fill= "#dcdcdc", color = "#dcdcdc")
+             
         )
     }, height = 400)
     
-    output$neighborhoodMap <- renderPlot({
-      chicago_static_map_data %>% ggplot(aes(fill = area_num_1)) + 
-        geom_sf(show.legend = FALSE) + 
-        theme_void()
+    output$neighborhoodListingsMakeup <- renderPlot({
+      chicago_subset() %>% ggplot(aes(x = 1, fill = neighbourhood_group)) + 
+        geom_bar(stat = "count", width = 1, show.legend = FALSE) + 
+        geom_text(stat='count', aes(label = ..count..,  fontface = "bold"),
+                position = position_stack(vjust = 0.5)) +
+        coord_polar(theta = "y") + 
+        labs(
+          title = "Number of Listings in Each Neighborhood Group", 
+          x = NULL, 
+          y = NULL
+        ) +
+        theme_minimal() +
+        theme(
+          axis.text = element_blank(), 
+          axis.ticks = element_blank(),
+          plot.background = element_rect(fill= "#dcdcdc", color = "#dcdcdc"), 
+          plot.title = element_text(size = 18, face = "bold", hjust = 0.5)
+        )
       
-    }, height = 400)
+    }, height = 400, width= 1000, bg = "#dcdcdc")
 
 }
 
