@@ -2,7 +2,9 @@ library(shiny)
 library(tidyverse)
 library(leaflet)
 library(leaflet.extras)
+library(sf)
 
+chicago_static_map_data <- read_sf("data/chicagomap.shp")
 chicago_clean <- readRDS("data/clean_data/chicago_cleaned_data.rds")
 
 ui <- fluidPage(
@@ -21,6 +23,7 @@ ui <- fluidPage(
           font-size: 24px;
           font-weight: bold;
         }
+        
 
         .container {
           background-color: #333;
@@ -28,6 +31,7 @@ ui <- fluidPage(
           padding: 20px;
           border-radius: 10px;
         }
+  
 
         .leaflet-popup-content {
           color: black;
@@ -35,6 +39,10 @@ ui <- fluidPage(
 
         .map-container {
           position: relative;
+        }
+        
+        .plot-container {
+          backgroud-color : #dcdcdc;
         }
 
         .action-button {
@@ -57,7 +65,7 @@ ui <- fluidPage(
   )),
   titlePanel(""),
   
-  # TabsetPanel with two tabs
+  # tabs
   tabsetPanel(
     tabPanel("Map", fluid = TRUE,
              fluidRow(column(
@@ -111,6 +119,58 @@ ui <- fluidPage(
              ))
     ),
     
+    tabPanel("Summary Visuals", fluid = TRUE,
+             fluidRow(column(
+               12, div("A More Detailed Look", class = "header")
+             )),
+             fluidRow(br()),
+             column(12, h2("First, a breakdown of the sample shown on the map.")), 
+             fluidRow(
+               column(12,
+                      div(tableOutput("variableBreakdown"))
+               ), 
+               column(12,
+                      div(class = "plot-container", plotOutput("histogram"))
+               )), 
+             br(), 
+             column(12, h2("Now, lets look at the neighborhoods and neighborhood groups.")), 
+             fluidRow(
+               column(6,
+                       div(class = "plot-container", plotOutput(outputId = "neighborhoodBarplot"))),
+                column(6, fluidRow(div(class = "plot-container", plotOutput(outputId = "neighborhoodGroupBarplot"))), 
+                          fluidRow(div(class = "plot-container", plotOutput(outputId = "neighborhoodMap")))
+                )
+             )  
+    ),
+    tabPanel("Neighborhood Groups", fluid = TRUE,
+             fluidRow(column(
+               12, div("Chicago Listing Visualization: Explanation an", class = "header")
+             )),
+             
+             div("The code categorizes neighborhoods in Chicago into different groups based on their geographical locations. The neighborhoods are assigned to broader areas or sides of the city to facilitate analysis and interpretation. The groupings are as follows:"), 
+             
+             fluidRow(
+               column(4,
+                 fluidRow(p("North Side")), 
+                 fluidRow(p(" Albany Park, Avondale, Lake View, Lincoln Park, Lincoln Square, Logan Square, North Center, Rogers Park, Uptown, Edgewater, West Ridge, Loop, Near North Side, North Side"))
+               )
+             ), 
+             fluidRow(
+               column(4,
+                 fluidRow(p("Southwest Side")), 
+                 fluidRow(p("Archer Heights, Ashburn, Beverly, Gage Park, Garfield Ridge, Hermosa, West Elsdon, West Englewood"))
+               )
+             ),fluidRow(
+               column(4,
+                 fluidRow(p("South Side")), 
+                 fluidRow(p("Armour Square, Bridgeport, Burnside, Calumet Heights, Chatham, Chicago Lawn, Clearing, Douglas, Grand Boulevard, Hyde Park, Kenwood, South Chicago, South Deering, South Lawndale, South Shore, Auburn Gresham, West Garfield Park, Near South Side, Avalon Park, New City, Woodlawn, Fuller Park, Englewood"))
+             )),fluidRow(
+               column(4,
+                 fluidRow(p("West Side")), 
+                 fluidRow(p(" Austin, East Garfield Park, Humboldt Park, West Town")
+             )))
+    ),
+    
     tabPanel("Explanation", fluid = TRUE,
              fluidRow(column(
                12, div("Chicago Listing Visualization: Explanation an", class = "header")
@@ -142,21 +202,24 @@ p("Possible future enhancements include incorporating more advanced analytics, a
 server <- function(input, output, session) {
   markers <- reactiveVal(TRUE)
   
-  observeEvent(input$show_markers, {
+  chicago_subset <- reactive({
+    chicago_clean |> slice_sample(n = input$num_listings)
+  })
+  
+
+   observeEvent(input$show_markers, {
     markers(!markers())
   })
   
+ 
   output$map <- renderLeaflet({
-    chicago_subset <-
-      chicago_clean |> slice_sample(n = input$num_listings)  # Use selected number of listings
-    
     map <- leaflet() |> 
       addProviderTiles("CartoDB.DarkMatter")
     
     if (markers()) {
       map <- map |> 
         addAwesomeMarkers(
-          data = chicago_subset,
+          data = chicago_subset(),
           lat = ~ latitude,
           lng = ~ longitude,
           icon = awesomeIcons(
@@ -195,19 +258,151 @@ server <- function(input, output, session) {
         data = chicago_clean,
         lat = ~ latitude,
         lng = ~ longitude,
-        intensity = chicago_subset[[input$variable]],
+        intensity = chicago_subset()[[input$variable]],
         blur = 20,
         radius = 15
       ) |> 
       addLegend(
         title = paste("", input$variable),
-        values = chicago_subset[[input$variable]],
+        values = chicago_subset()[[input$variable]],
         pal = colorNumeric("viridis", domain = NULL),
         opacity = 1
       )
     
     map
-  })
+    })
+    
+    output$variableBreakdown <- renderTable({
+      var_summarise <- switch(
+        input$variable,
+        'rating' = chicago_subset()$rating,
+        'bedrooms' = chicago_subset()$bedrooms,
+        'price' = chicago_subset()$price,
+        'reviews_per_month' = chicago_subset()$number_of_reviews,
+        'availability_365' = chicago_subset()$availability_365
+      ) 
+      
+      var_title <- switch(
+        input$variable,
+        'rating' = 'Rating',
+        'bedrooms' = 'Number of Bedrooms',
+        'price' = 'Price per Night',
+        'reviews_per_month' = 'Reviews Per Month', 
+        'availability_365' = 'Availability throughout the Year'
+      )
+      
+      chicago_subset() %>% 
+          summarise(Variable = var_title, Total = n(), Mean = mean(var_summarise), Distinct = n_distinct(var_summarise), Minimum = min(var_summarise), Maximum = max(var_summarise))
+    })
+    
+    output$histogram <- renderPlot({
+
+      var_bar <- switch(
+        input$variable,
+        'rating' = chicago_subset()$rating,
+        'bedrooms' = chicago_subset()$bedrooms,
+        'price' = chicago_subset()$price,
+        'reviews_per_month' = chicago_subset()$number_of_reviews,
+        'availability_365' = chicago_subset()$availability_365
+      )
+      
+      var_title <- switch(
+        input$variable,
+        'rating' = 'Rating',
+        'bedrooms' = 'Number of Bedrooms',
+        'price' = 'Price per Night',
+        'reviews_per_month' = 'Reviews Per Month', 
+        'availability_365' = 'Availability throughout the Year'
+      )
+      
+      if (input$variable != 'bedrooms') {
+        chicago_subset() %>% ggplot(aes(var_bar)) +
+          geom_histogram() + 
+          ggtitle(paste("Distribution of", var_title, "in the Sample"))
+      }
+    })
+    
+    output$neighborhoodBarplot <- renderPlot({
+      
+      var_bar <- switch(
+        input$variable,
+        'rating' = chicago_subset()$rating,
+        'bedrooms' = chicago_subset()$bedrooms,
+        'price' = chicago_subset()$price,
+        'reviews_per_month' = chicago_subset()$number_of_reviews,
+        'availability_365' = chicago_subset()$availability_365
+      )
+      
+      var_title <- switch(
+        input$variable,
+        'rating' = 'Rating',
+        'bedrooms' = 'Number of Bedrooms',
+        'price' = 'Price per Night',
+        'reviews_per_month' = 'Reviews Per Month',
+        'availability_365' = 'Availability throughout the Year'
+      )
+      
+      chicago_subset() %>% ggplot(aes(var_bar, neighbourhood)) +
+        geom_col(aes(fill = neighbourhood), position = 'dodge', width = 0.9, show.legend = FALSE) +
+        ggtitle(paste('Average', var_title, 'in each Neighborhood')) +
+        labs(
+          x = var_title,
+          y = "Neighborhood"
+        ) + 
+        scale_x_continuous(
+          expand =  expansion(mult = c(0, .1))
+        ) +
+        theme(plot.title = element_text(size = 12, face = "bold"), 
+              axis.text = element_text(size = 12), 
+              axis.title = element_text(size = 18),
+              rect = element_rect(color = "#dcdcdc")
+        )
+    }, height = 800)
+    
+    output$neighborhoodGroupBarplot <- renderPlot({
+      
+      var_bar <- switch(
+        input$variable,
+        'rating' = chicago_subset()$rating,
+        'bedrooms' = chicago_subset()$bedrooms,
+        'price' = chicago_subset()$price,
+        'reviews_per_month' = chicago_subset()$number_of_reviews,
+        'availability_365' = chicago_subset()$availability_365
+      )
+      
+      var_title <- switch(
+        input$variable,
+        'rating' = 'Rating',
+        'bedrooms' = 'Number of Bedrooms',
+        'price' = 'Price per Night',
+        'reviews_per_month' = 'Reviews Per Month',
+        'availability_365' = 'Availability throughout the Year'
+      )
+      
+      chicago_subset() %>% ggplot(aes(var_bar, neighbourhood_group)) +
+        geom_col(position = 'dodge', fill = "lightblue", width = 0.9) +
+        ggtitle(paste('Average', var_title, 'in each Neighborhood Group')) +
+        labs(
+          y = "Neighborhood Group",
+          x = var_title
+        ) + 
+        scale_x_continuous(
+          expand = expansion(mult = c(0, .1))
+        ) +
+        theme(plot.title = element_text(size = 12, face = "bold"), 
+              axis.text = element_text(size = 12), 
+              axis.title = element_text(size = 18),
+              rect = element_rect(color = "#dcdcdc")
+        )
+    }, height = 400)
+    
+    output$neighborhoodMap <- renderPlot({
+      chicago_static_map_data %>% ggplot(aes(fill = area_num_1)) + 
+        geom_sf(show.legend = FALSE) + 
+        theme_void()
+      
+    }, height = 400)
+
 }
 
 shinyApp(ui, server)

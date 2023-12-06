@@ -112,6 +112,16 @@ ui <- fluidPage(
              ))
     ),
     
+    tabPanel("Summary Visuals", fluid = TRUE, 
+             fluidRow(column(
+               12,
+               div(class = "map-container",
+                   plotOutput(
+                     outputId = "barplot", width = "100%", height = "600px"
+                   ))
+             ))
+            ),
+    
     tabPanel("Explanation", fluid = TRUE,
              fluidRow(column(
                12, div("Chicago Listing Visualization: Explanation an", class = "header")
@@ -137,17 +147,6 @@ p("Possible future enhancements include incorporating more advanced analytics, a
                )
              )
     )
-  ),
-
-  titlePanel("Chicago Listing Heatmap"),
-  sidebarPanel(
-    selectInput("variable", "Choose Variable for Intensity:",
-                choices = c("rating", "bedrooms", "price", "number_of_reviews")),  # Add more choices as needed
-  ),
-  mainPanel(
-    tabsetPanel(type = "tabs", 
-                tabPanel("Map", leafletOutput("map")), 
-                tabPanel("Neighborhood Group Summary", plotOutput(outputId = "barplot")))
   )
 )
   
