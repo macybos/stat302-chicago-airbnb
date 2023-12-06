@@ -3,10 +3,8 @@ library(tidyverse)
 library(leaflet)
 library(leaflet.extras)
 library(sf)
-library(ggmap)
 
 chicago_clean <- readRDS("data/clean_data/chicago_cleaned_data.rds")
-register_google(key = "AIzaSyC46bco6pjyrIJYIPzY5U1r5T2ktssaFck")
 
 ui <- fluidPage(
   tags$head(tags$style(
