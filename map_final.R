@@ -5,7 +5,7 @@ library(leaflet.extras)
 library(sf)
 
 chicago_clean <- readRDS("data/clean_data/chicago_cleaned_data.rds")
-
+4
 ui <- fluidPage(
   tags$head(tags$style(
     HTML(
@@ -208,12 +208,17 @@ ui <- fluidPage(
              fluidRow(h5("Northwest Side")),
              fluidRow(
                p(
-                 "Belmont Cragin, Dunning, North Park, Norwood Park, Near West Side, Edison Park, Forest Glen, Irving Park, Jefferson Park, Montclare, Ohare, Portage Park"
+                 "Belmont Cragin, Dunning, North Park, Norwood Park, Near West Side, Edison Park, Forest Glen, Irving Park, Jefferson Park"
                )
              )),
       column(8,
              offset = 2,
-             fluidRow(h5("Far Northwest Side")),),
+             fluidRow(h5("Far Northwest Side")),
+             fluidRow(
+               p(
+                 "Montclare, Ohare, Portage Park"
+               )
+             )),
       column(8,
              offset = 2,
              fluidRow(h5("Southwest Side")),
@@ -259,7 +264,7 @@ ui <- fluidPage(
           ),
           
           p(
-            "In addition to the interactive map, we decided to include a tab with summary statistics and visualizations by neighborhood to give the user a more in depth look at the variable they chose. Key summary statistics that we display include the mean, maximum, minimum, total number of values, and distinct number of values. Below these statistics, we included a histogram for the variable selected to show the user how it is distributed in the sample they have chosen. The users can also see a breakdown of how their variable fairs in each neighborhood in the barplots, as well as, how many listings from the sample are in each neighborhood group in the pie chart. The barplots show the average for both neighborhoods and neighborhood groups.  We felt the addition of this summary tab ensured that the user could not only see the density of values on the map, but also get a more explicit breakdown of their variable in the sample."
+            "In addition to the interactive map, we decided to include a tab with summary statistics and visualizations by neighborhood to give the user a more in depth look at the variable they chose. Key summary statistics that we display include the mean, maximum, minimum, total number of values, and number of distinct values. Below these statistics, we included a histogram for the variable selected to show the user how it is distributed in the sample they have chosen. The users can also see a breakdown of how their variable fairs in each neighborhood in the barplots, as well as, how many listings from the sample are in each neighborhood group in the pie chart. The barplots show the average for both neighborhoods and neighborhood groups.  We felt the addition of this summary tab ensured that the user could not only see the density of values on the map, but also get a more explicit breakdown of their variable in the sample."
           ),
           
           p(
